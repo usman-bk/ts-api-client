@@ -1,0 +1,51 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - run: npm test
+
+      # There are no runtime dependencies, and that is a property worth
+      # keeping rather than a coincidence. A client shipped inside a phone
+      # app pays for every transitive package in install size and in
+      # supply chain risk.
+      - name: No runtime dependencies
+        run: |
+          deps=$(node -p "Object.keys(require('./package.json').dependencies ?? {}).join(' ')")
+          if [ -n "$deps" ]; then
+            echo "runtime dependencies have appeared: $deps"
+            exit 1
+          fi
+
+      # The single flight refresh is the property this library exists for,
+      # so check the test that covers it can actually fail.
+      - name: The single flight test can fail
+        run: |
+          cp src/auth.ts /tmp/auth.ts.bak
+          node -e "
+            const fs = require('fs');
+            let s = fs.readFileSync('src/auth.ts', 'utf8');
+            s = s.replace('if (this.inFlight) return this.inFlight;', '');
+            fs.writeFileSync('src/auth.ts', s);
+          "
+          if npm test; then
+            echo "the suite passed with the single flight latch removed, so it checks nothing"
+            cp /tmp/auth.ts.bak src/auth.ts
+            exit 1
+          fi
+          cp /tmp/auth.ts.bak src/auth.ts

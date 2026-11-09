@@ -1,0 +1,24 @@
+{
+  "name": "ts-api-client",
+  "version": "1.0.0",
+  "description": "A typed client for the marketplace API, built for a phone",
+  "main": "dist/src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "tsc && node --test dist/test/*.test.js",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  },
+  "types": "dist/src/index.d.ts"
+}
