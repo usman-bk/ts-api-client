@@ -40,7 +40,7 @@ jobs:
           node -e "
             const fs = require('fs');
             let s = fs.readFileSync('src/auth.ts', 'utf8');
-            s = s.replace('if (this.inFlight) return this.inFlight;', '');
+            s = s.replaceAll('if (this.inFlight) return this.inFlight;', '');
             fs.writeFileSync('src/auth.ts', s);
           "
           if npm test; then
